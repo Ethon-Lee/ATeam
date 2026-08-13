@@ -324,7 +324,7 @@ describe('prepareOpenCodeAcpSpawnConfig', () => {
         'claude-opus-4-6': {
           id: 'claude-opus-4-6-20260101',
           name: 'claude-opus-4-6',
-          limit: { context: 128_000 },
+          limit: { context: 128_000, output: 16_000 },
         },
       });
       assert.deepEqual(prepared.runtimeConfigSummary.providerSummary.anthropic.modelMappings, {
@@ -394,6 +394,20 @@ describe('prepareOpenCodeAcpSpawnConfig', () => {
 });
 
 describe('generateOpenCodeRuntimeConfig', () => {
+  test('adds OpenCode-required output limits to every custom provider model', () => {
+    const config = generateOpenCodeRuntimeConfig({
+      providerName: 'openai',
+      models: ['openai/qwen3.8-max', 'openai/glm-5.2'],
+      defaultModel: 'openai/qwen3.8-max',
+      apiType: 'openai',
+      hasBaseUrl: true,
+    });
+
+    const models = config.provider['openai-compat'].models;
+    assert.deepStrictEqual(models?.['qwen3.8-max']?.limit, { output: 16_000 });
+    assert.deepStrictEqual(models?.['glm-5.2']?.limit, { output: 16_000 });
+  });
+
   test('generates custom provider config with env placeholders and stripped model keys', () => {
     const config = generateOpenCodeRuntimeConfig({
       providerName: 'maas',
@@ -406,8 +420,8 @@ describe('generateOpenCodeRuntimeConfig', () => {
     assert.equal(config.model, 'maas/glm-5');
     assert.equal(config.small_model, 'maas/glm-5');
     assert.deepStrictEqual(config.provider.maas.models, {
-      'glm-5': { name: 'glm-5' },
-      'glm-4-plus': { name: 'glm-4-plus' },
+      'glm-5': { name: 'glm-5', limit: { output: 16_000 } },
+      'glm-4-plus': { name: 'glm-4-plus', limit: { output: 16_000 } },
     });
     assert.equal(config.provider.maas.npm, '@ai-sdk/openai-compatible');
     assert.equal(config.provider.maas.options.baseURL, `{env:${OC_BASE_URL_ENV}}`);
@@ -426,7 +440,7 @@ describe('generateOpenCodeRuntimeConfig', () => {
 
     assert.equal(config.model, 'kimi/kimi-code/k3');
     assert.deepStrictEqual(config.provider.kimi.models, {
-      'kimi-code/k3': { id: 'kimi-k3', name: 'kimi-code/k3' },
+      'kimi-code/k3': { id: 'kimi-k3', name: 'kimi-code/k3', limit: { output: 16_000 } },
     });
   });
 
@@ -439,7 +453,7 @@ describe('generateOpenCodeRuntimeConfig', () => {
     });
 
     assert.deepStrictEqual(config.provider.vendor.models, {
-      'custom-model': { name: 'custom-model' },
+      'custom-model': { name: 'custom-model', limit: { output: 16_000 } },
     });
   });
 
@@ -451,8 +465,8 @@ describe('generateOpenCodeRuntimeConfig', () => {
     });
 
     assert.deepStrictEqual(config.provider.vendor.models, {
-      toString: { name: 'toString' },
-      constructor: { name: 'constructor' },
+      toString: { name: 'toString', limit: { output: 16_000 } },
+      constructor: { name: 'constructor', limit: { output: 16_000 } },
     });
   });
 
@@ -769,11 +783,16 @@ describe('writeOpenCodeRuntimeConfig', () => {
         hasBaseUrl: true,
       });
 
-      assert.match(configPath, /\.cat-cafe\/oc-config-opencode-maas-inv-123\/opencode\.json$/);
+      assert.ok(
+        configPath.endsWith(join('.cat-cafe', 'oc-config-opencode-maas-inv-123', 'opencode.json')),
+        `unexpected runtime config path: ${configPath}`,
+      );
       assert.ok(existsSync(configPath), 'opencode.json must exist at returned config path');
       const content = JSON.parse(readFileSync(configPath, 'utf-8'));
       assert.equal(content.model, 'maas/glm-5');
-      assert.deepStrictEqual(content.provider.maas.models, { 'glm-5': { name: 'glm-5' } });
+      assert.deepStrictEqual(content.provider.maas.models, {
+        'glm-5': { name: 'glm-5', limit: { output: 16_000 } },
+      });
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true });
     }

@@ -1,3 +1,4 @@
+import { getMemberOutputReserve } from '../../../../../config/context-capacity.js';
 import { createModuleLogger } from '../../../../../infrastructure/logger.js';
 import { buildOpenCodeMcpSync } from './opencode-mcp-injection.js';
 
@@ -22,7 +23,7 @@ interface OpenCodeConfigOptions {
 
 type OpenCodeProviderConfig = {
   npm?: string;
-  models?: Record<string, { id?: string; name: string; limit?: { context: number } }>;
+  models?: Record<string, { id?: string; name: string; limit?: { context?: number; output: number } }>;
   options: {
     apiKey?: string;
     baseURL?: string;
@@ -227,8 +228,9 @@ export function generateOpenCodeRuntimeConfig(options: OpenCodeRuntimeConfigOpti
 
   const configName = safeProviderName(providerName);
 
-  const modelsMap: Record<string, { id?: string; name: string; limit?: { context: number } }> = {};
+  const modelsMap: Record<string, { id?: string; name: string; limit: { output: number; context?: number } }> = {};
   const modelsToRegister = defaultModel ? [...models, defaultModel] : [...models];
+  const outputLimit = getMemberOutputReserve(catId ?? '');
   for (const rawModel of modelsToRegister) {
     const modelName = stripOwnProviderPrefix(rawModel, providerName);
     const configuredAlias =
@@ -237,7 +239,10 @@ export function generateOpenCodeRuntimeConfig(options: OpenCodeRuntimeConfigOpti
     modelsMap[modelName] = {
       ...(upstreamId ? { id: upstreamId } : {}),
       name: modelName,
-      ...(contextWindowTokens && contextWindowTokens > 0 ? { limit: { context: contextWindowTokens } } : {}),
+      limit: {
+        output: outputLimit,
+        ...(contextWindowTokens && contextWindowTokens > 0 ? { context: contextWindowTokens } : {}),
+      },
     };
   }
 
