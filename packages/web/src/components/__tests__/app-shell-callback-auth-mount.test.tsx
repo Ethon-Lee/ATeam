@@ -115,23 +115,6 @@ describe('AppShell CallbackAuthSnapshotMount presence', () => {
     });
   });
 
-  it('does NOT mount on chromeless /story route', () => {
-    navState.pathname = '/story';
-    renderShell();
-    expect(container.querySelector('[data-testid="callback-auth-mount"]')).toBeNull();
-    expect(useWorkspaceNavigateMock).toHaveBeenCalledWith(null, {
-      isChatRoute: false,
-      isWorkspaceVisible: false,
-      enabled: true,
-    });
-  });
-
-  it('does NOT mount on chromeless /story-export route', () => {
-    navState.pathname = '/story-export';
-    renderShell();
-    expect(container.querySelector('[data-testid="callback-auth-mount"]')).toBeNull();
-  });
-
   it('does NOT mount in export mode', () => {
     navState.pathname = '/';
     navState.search = 'export=true';

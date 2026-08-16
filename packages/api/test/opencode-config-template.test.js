@@ -394,7 +394,7 @@ describe('prepareOpenCodeAcpSpawnConfig', () => {
 });
 
 describe('generateOpenCodeRuntimeConfig', () => {
-  test('adds OpenCode-required output limits to every custom provider model', () => {
+  test('adds OpenCode-required model limits to every custom provider model', () => {
     const config = generateOpenCodeRuntimeConfig({
       providerName: 'openai',
       models: ['openai/qwen3.8-max', 'openai/glm-5.2'],
@@ -404,8 +404,24 @@ describe('generateOpenCodeRuntimeConfig', () => {
     });
 
     const models = config.provider['openai-compat'].models;
-    assert.deepStrictEqual(models?.['qwen3.8-max']?.limit, { output: 16_000 });
-    assert.deepStrictEqual(models?.['glm-5.2']?.limit, { output: 16_000 });
+    assert.deepStrictEqual(models?.['qwen3.8-max']?.limit, { context: 128_000, output: 16_000 });
+    assert.deepStrictEqual(models?.['glm-5.2']?.limit, { context: 1_000_000, output: 16_000 });
+  });
+
+  test('adds schema-safe context limits for KimiK3 account models without catalog capacity', () => {
+    const config = generateOpenCodeRuntimeConfig({
+      providerName: 'openai',
+      models: ['doubao-seed-2.1-turbo', 'glm-5.3', 'deepseek-v4-flash', 'kimi-k3'],
+      defaultModel: 'openai/kimi-k3',
+      apiType: 'openai',
+      hasBaseUrl: true,
+    });
+
+    const models = config.provider['openai-compat'].models;
+    assert.deepStrictEqual(models?.['doubao-seed-2.1-turbo']?.limit, { context: 128_000, output: 16_000 });
+    assert.deepStrictEqual(models?.['glm-5.3']?.limit, { context: 128_000, output: 16_000 });
+    assert.deepStrictEqual(models?.['deepseek-v4-flash']?.limit, { context: 128_000, output: 16_000 });
+    assert.deepStrictEqual(models?.['kimi-k3']?.limit, { context: 128_000, output: 16_000 });
   });
 
   test('generates custom provider config with env placeholders and stripped model keys', () => {
@@ -420,8 +436,8 @@ describe('generateOpenCodeRuntimeConfig', () => {
     assert.equal(config.model, 'maas/glm-5');
     assert.equal(config.small_model, 'maas/glm-5');
     assert.deepStrictEqual(config.provider.maas.models, {
-      'glm-5': { name: 'glm-5', limit: { output: 16_000 } },
-      'glm-4-plus': { name: 'glm-4-plus', limit: { output: 16_000 } },
+      'glm-5': { name: 'glm-5', limit: { context: 128_000, output: 16_000 } },
+      'glm-4-plus': { name: 'glm-4-plus', limit: { context: 128_000, output: 16_000 } },
     });
     assert.equal(config.provider.maas.npm, '@ai-sdk/openai-compatible');
     assert.equal(config.provider.maas.options.baseURL, `{env:${OC_BASE_URL_ENV}}`);
@@ -440,7 +456,7 @@ describe('generateOpenCodeRuntimeConfig', () => {
 
     assert.equal(config.model, 'kimi/kimi-code/k3');
     assert.deepStrictEqual(config.provider.kimi.models, {
-      'kimi-code/k3': { id: 'kimi-k3', name: 'kimi-code/k3', limit: { output: 16_000 } },
+      'kimi-code/k3': { id: 'kimi-k3', name: 'kimi-code/k3', limit: { context: 128_000, output: 16_000 } },
     });
   });
 
@@ -453,7 +469,7 @@ describe('generateOpenCodeRuntimeConfig', () => {
     });
 
     assert.deepStrictEqual(config.provider.vendor.models, {
-      'custom-model': { name: 'custom-model', limit: { output: 16_000 } },
+      'custom-model': { name: 'custom-model', limit: { context: 128_000, output: 16_000 } },
     });
   });
 
@@ -465,8 +481,8 @@ describe('generateOpenCodeRuntimeConfig', () => {
     });
 
     assert.deepStrictEqual(config.provider.vendor.models, {
-      toString: { name: 'toString', limit: { output: 16_000 } },
-      constructor: { name: 'constructor', limit: { output: 16_000 } },
+      toString: { name: 'toString', limit: { context: 128_000, output: 16_000 } },
+      constructor: { name: 'constructor', limit: { context: 128_000, output: 16_000 } },
     });
   });
 
@@ -791,7 +807,7 @@ describe('writeOpenCodeRuntimeConfig', () => {
       const content = JSON.parse(readFileSync(configPath, 'utf-8'));
       assert.equal(content.model, 'maas/glm-5');
       assert.deepStrictEqual(content.provider.maas.models, {
-        'glm-5': { name: 'glm-5', limit: { output: 16_000 } },
+        'glm-5': { name: 'glm-5', limit: { context: 128_000, output: 16_000 } },
       });
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true });

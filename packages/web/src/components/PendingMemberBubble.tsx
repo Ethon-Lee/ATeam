@@ -3,9 +3,7 @@
 import type { CapabilityTipContext } from '@cat-cafe/shared';
 import { formatCatName, useCatData } from '@/hooks/useCatData';
 import type { AppServerLifecycleSnapshot, CatStatusType } from '@/stores/chat-types';
-import { CapabilityTipStrip } from './CapabilityTipStrip';
 import { CatAvatar } from './CatAvatar';
-import { DEFAULT_STREAMING_TIP_CONTEXTS, isStreamingTipSuppressed } from './capability-tip-placement';
 import { MessageBubble } from './MessageBubble';
 
 interface PendingMemberBubbleProps {
@@ -15,15 +13,14 @@ interface PendingMemberBubbleProps {
   catStatus?: CatStatusType;
   /** App-server lifecycle can become stalled while catStatus remains streaming. */
   appServerLifecycle?: AppServerLifecycleSnapshot;
-  /** Tip contexts from intentMode — review mode gets review tips instead of generic thinking tips. */
+  /** Retained for call-site compatibility while the Concierge surface is out of the MVP. */
   tipContexts?: readonly CapabilityTipContext[];
-  /** Only one pending bubble per thread should show tips (dedup — cloud review P2). */
+  /** Retained for call-site compatibility while the Concierge surface is out of the MVP. */
   showCapabilityTip?: boolean;
 }
 
 /**
- * Minimal dots fallback for dedup bubbles (showCapabilityTip=false) and
- * stall-suppressed states where the tip strip is hidden (AC-B2).
+ * Minimal pending state shown while an invocation has not emitted output.
  */
 function PendingDots() {
   return (
@@ -48,24 +45,14 @@ function PendingDots() {
  * #936: Show a member-level pending bubble with avatar before any stream
  * content arrives.
  *
- * F244 operator dogfood Round 4: the tip strip IS the thinking indicator —
- * a unified bubble with breathing animation. No separate dots when tips
- * are active. Dedup bubbles (showCapabilityTip=false) and stall states
- * fall back to minimal dots.
+ * The MVP keeps the pending state deliberately bounded to the streaming dots.
+ * Capability tips used to open the global Concierge surface, which is no longer
+ * mounted after the MVP surface freeze.
  */
-export function PendingMemberBubble({
-  catId,
-  invocationId,
-  catStatus,
-  appServerLifecycle,
-  tipContexts,
-  showCapabilityTip = false,
-}: PendingMemberBubbleProps) {
+export function PendingMemberBubble({ catId, invocationId }: PendingMemberBubbleProps) {
   const { getCatById } = useCatData();
   const catData = getCatById(catId);
   const catName = catData ? formatCatName(catData) : catId;
-  const tipEnabled = showCapabilityTip && !isStreamingTipSuppressed(catStatus, appServerLifecycle);
-
   return (
     <MessageBubble
       messageId={`pending-${invocationId}`}
@@ -77,17 +64,7 @@ export function PendingMemberBubble({
       }
       wrapperClassName="group cat-persona-derived"
     >
-      {tipEnabled ? (
-        <CapabilityTipStrip
-          surface="pending_bubble"
-          contexts={tipContexts ?? DEFAULT_STREAMING_TIP_CONTEXTS}
-          audience="cvo"
-          enabled
-          firstDelayMs={0}
-        />
-      ) : (
-        <PendingDots />
-      )}
+      <PendingDots />
     </MessageBubble>
   );
 }

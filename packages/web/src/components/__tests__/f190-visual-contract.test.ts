@@ -276,13 +276,6 @@ describe('F190 visual contract — no hard borders in card/panel components', ()
     expect(src).toContain('focus:ring-[var(--console-input-stroke)]');
   });
 
-  it('PluginsContent shows GitHub config only, no ServiceStatusPanel', () => {
-    const src = readSrc('settings/PluginsContent.tsx');
-    expect(src).toContain('GitHub');
-    expect(src).not.toContain('ServiceStatusPanel');
-    expect(src).not.toContain('adaptServiceToPlugin');
-  });
-
   it('SettingsDeleteButton uses HubIcon trash, not inline SVG', () => {
     const src = readSrc('settings/primitives/SettingsDeleteButton.tsx');
     expect(src).toContain('HubIcon');
@@ -463,7 +456,6 @@ describe('F190 typography guard — no hardcoded font sizes in console scope', (
     'settings/SkillPreviewModal.tsx',
     'settings/InstallPreviewModal.tsx',
     'settings/PluginConfigPanel.tsx',
-    'settings/PushServiceConfig.tsx',
     'hub-cat-editor-fields.tsx',
     'hub-cat-editor-voice.tsx',
     'hub-cat-editor-advanced.tsx',
@@ -538,7 +530,6 @@ describe('F190 divider guard — console-scope dividers use semantic class', () 
     'settings/primitives/SettingsCollapsibleCard.tsx',
     'settings/capability-settings-ui.tsx',
     'UnifiedAuthModal.tsx',
-    'PushSettingsPanel.tsx',
     'ThreadExecutionBar.tsx',
     'ParallelStatusBar.tsx',
     'audit/AuditExplorerPanel.tsx',
@@ -714,14 +705,6 @@ describe('#723 cross-page typography consistency', () => {
     expect(chatRules).not.toContain('display: none');
   });
 
-  it('PushSettingsPanel uses resource-card shell and embeds PushServiceConfig content', () => {
-    const src = readSrc('PushSettingsPanel.tsx');
-    expect(src).toContain('settingsResourceCardClass');
-    expect(src).toContain('settingsResourceRowClass');
-    expect(src).toContain('<PushServiceConfig embedded />');
-    expect(src).not.toContain('CARD_SHADOW');
-  });
-
   it('interactive icon buttons use muted default, accent hover', () => {
     for (const file of ['settings/primitives/SettingsIconButton.tsx', 'settings/primitives/SettingsDeleteButton.tsx']) {
       const src = readSrc(file);
@@ -802,12 +785,6 @@ describe('#723 interactive button guard — no grey pill on action/toggle contro
 });
 
 describe('#723 round 3 — input/select/stat unification guard', () => {
-  it('PushServiceConfig: no right-side status block (公钥/PushService)', () => {
-    const src = readSrc('settings/PushServiceConfig.tsx');
-    expect(src).not.toContain('公钥：');
-    expect(src).not.toContain('PushService：');
-  });
-
   it('EnvSubComponents: default value inline (not separate line), no per-row buildVariableHint', () => {
     const src = readSrc('settings/EnvSubComponents.tsx');
     expect(src).toMatch(/v\.description[\s\S]*?默认: \{v\.defaultValue\}/);
@@ -875,12 +852,6 @@ describe('#723 round 3 — input/select/stat unification guard', () => {
     expect(src).toContain('text-xs font-medium');
     expect(src).not.toContain('uppercase tracking-wider');
   });
-
-  it('PushServiceConfig title and description on one line, not separate blocks', () => {
-    const src = readSrc('settings/PushServiceConfig.tsx');
-    expect(src).toMatch(/VAPID 推送密钥[\s\S]*?保存后写入/);
-    expect(src).not.toMatch(/<\/SettingsText>[\s\S]*?<SettingsText[^>]*>[\s\n]*保存后写入/);
-  });
 });
 
 describe('#723 round 4 — primitive convergence guard', () => {
@@ -902,12 +873,6 @@ describe('#723 round 4 — primitive convergence guard', () => {
     expect(src).toContain('border-[var(--console-border-soft)]');
     expect(src).toContain('bg-transparent');
     expect(src).toContain('console-input-stroke');
-  });
-
-  it('VoiceSettingsPanel inputs use input-stroke focus, not console-border-strong', () => {
-    const src = readSrc('VoiceSettingsPanel.tsx');
-    expect(src).toContain('console-input-stroke');
-    expect(src).not.toContain('console-border-strong');
   });
 
   it('SettingsNav active: no section.color tinting, uses unified active-bg', () => {
@@ -940,12 +905,6 @@ describe('#723 round 4 — primitive convergence guard', () => {
     const src = readSrc('mission-control/QuickCreateForm.tsx');
     expect(src).toContain('bg-cafe-accent');
     expect(src).not.toMatch(/bg-\[var\(--cafe-text\)\]/);
-  });
-
-  it('VoiceSettingsPanel Section cards match SettingsRow: rounded-xl + 0.04 shadow', () => {
-    const src = readSrc('VoiceSettingsPanel.tsx');
-    expect(src).toContain('rounded-xl');
-    expect(src).not.toMatch(/rounded-2xl[\s\S]*?shadow-\[0_12px/);
   });
 
   it('MarketplacePanel skeleton uses theme tokens, no bg-white', () => {
@@ -1094,15 +1053,6 @@ describe('#723 round 6 — select/toggle/button primitive convergence', () => {
     expect(src).not.toContain('focus:ring-2');
   });
 
-  it('VoiceSettingsPanel select: field-bg background, native arrow (no appearance-none), input-stroke focus', () => {
-    const src = readSrc('VoiceSettingsPanel.tsx');
-    const selectMatch = src.match(/id="voice-language-select"[\s\S]*?<\/select>/);
-    expect(selectMatch).not.toBeNull();
-    expect(selectMatch![0]).toContain('console-field-bg');
-    expect(selectMatch![0]).not.toContain('appearance-none');
-    expect(selectMatch![0]).toContain('console-input-stroke');
-  });
-
   it('DefaultCatSelector select: field-bg background, input-stroke focus', () => {
     const src = readSrc('DefaultCatSelector.tsx');
     expect(src).toContain('console-field-bg');
@@ -1240,7 +1190,7 @@ describe('#723 round 7 — operator visual convergence: tabs, search, selects, b
   });
 
   it('All selects: no appearance-none (native arrow visible)', () => {
-    for (const file of ['signals/SignalFilterBar.tsx', 'VoiceSettingsPanel.tsx']) {
+    for (const file of ['signals/SignalFilterBar.tsx']) {
       const src = readSrc(file);
       expect(src).not.toContain('appearance-none');
     }
@@ -1425,7 +1375,6 @@ describe('#723 round 9 — install button, error suppression, breadcrumb, tab/ca
     for (const file of [
       'settings/primitives/SettingsSection.tsx',
       'settings/primitives/SettingsToolbar.tsx',
-      'settings/PushDiagnosticsSection.tsx',
     ]) {
       const src = readSrc(file);
       expect(src).not.toContain('rounded-2xl');

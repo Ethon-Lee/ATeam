@@ -6,13 +6,8 @@ vi.mock('@/utils/api-client', () => ({
   apiFetch: vi.fn(),
 }));
 
-vi.mock('../VoiceSettingsPanel', () => ({
-  VoiceSettingsPanel: () => React.createElement('div', { 'data-testid': 'voice-settings-panel' }, 'Voice Settings'),
-}));
-
 import { apiFetch } from '@/utils/api-client';
 import { ServiceStatusPanel } from '../settings/ServiceStatusPanel';
-import { SettingsContent } from '../settings/SettingsContent';
 
 const servicesPayload = {
   services: [
@@ -282,14 +277,6 @@ describe('ServiceStatusPanel', () => {
     });
 
     expect(container.textContent).toBe('');
-  });
-
-  it('wires the voice settings section to the service status panel', async () => {
-    await render(React.createElement(SettingsContent, { section: 'voice' }));
-
-    expect(container.textContent).toContain('语音服务');
-    expect(container.textContent).toContain('语音识别 (Whisper)');
-    expect(container.querySelector('[data-testid="voice-settings-panel"]')).toBeTruthy();
   });
 
   it('shows error and does not call /toggle when /stop fails', async () => {

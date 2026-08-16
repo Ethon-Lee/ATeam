@@ -4,12 +4,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback } from 'react';
 import { SettingsContent } from './SettingsContent';
 import { SettingsNav } from './SettingsNav';
-import { DEFAULT_SECTION } from './settings-nav-config';
+import { DEFAULT_SECTION, SETTINGS_SECTIONS } from './settings-nav-config';
 
 function SettingsShellInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeSection = searchParams.get('s') ?? (searchParams.get('ops') ? 'ops' : DEFAULT_SECTION);
+  const requestedSection = searchParams.get('s') ?? (searchParams.get('ops') ? 'ops' : DEFAULT_SECTION);
+  const activeSection = SETTINGS_SECTIONS.some((section) => section.id === requestedSection)
+    ? requestedSection
+    : DEFAULT_SECTION;
   const initialEditCatId = searchParams.get('cat') ?? undefined;
   const standalone = searchParams.get('standalone') === '1';
 

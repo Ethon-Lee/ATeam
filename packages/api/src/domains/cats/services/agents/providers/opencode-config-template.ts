@@ -1,4 +1,5 @@
 import { getMemberOutputReserve } from '../../../../../config/context-capacity.js';
+import { getContextWindowFallback } from '../../../../../config/context-window-sizes.js';
 import { createModuleLogger } from '../../../../../infrastructure/logger.js';
 import { buildOpenCodeMcpSync } from './opencode-mcp-injection.js';
 
@@ -9,6 +10,7 @@ export {
 } from '../../../../../config/opencode-model.js';
 
 const log = createModuleLogger('opencode-config');
+const OPENCODE_SCHEMA_CONTEXT_FALLBACK = 128_000;
 
 interface OpenCodeConfigOptions {
   /** Anthropic API key — validated but NOT written to config (stays in ANTHROPIC_API_KEY env var) */
@@ -23,7 +25,7 @@ interface OpenCodeConfigOptions {
 
 type OpenCodeProviderConfig = {
   npm?: string;
-  models?: Record<string, { id?: string; name: string; limit?: { context?: number; output: number } }>;
+  models?: Record<string, { id?: string; name: string; limit: { context: number; output: number } }>;
   options: {
     apiKey?: string;
     baseURL?: string;
@@ -228,7 +230,7 @@ export function generateOpenCodeRuntimeConfig(options: OpenCodeRuntimeConfigOpti
 
   const configName = safeProviderName(providerName);
 
-  const modelsMap: Record<string, { id?: string; name: string; limit: { output: number; context?: number } }> = {};
+  const modelsMap: Record<string, { id?: string; name: string; limit: { context: number; output: number } }> = {};
   const modelsToRegister = defaultModel ? [...models, defaultModel] : [...models];
   const outputLimit = getMemberOutputReserve(catId ?? '');
   for (const rawModel of modelsToRegister) {
@@ -236,12 +238,17 @@ export function generateOpenCodeRuntimeConfig(options: OpenCodeRuntimeConfigOpti
     const configuredAlias =
       modelAliases && Object.hasOwn(modelAliases, modelName) ? modelAliases[modelName] : undefined;
     const upstreamId = typeof configuredAlias === 'string' ? configuredAlias.trim() : undefined;
+    const contextLimit =
+      (contextWindowTokens && contextWindowTokens > 0 ? contextWindowTokens : undefined) ??
+      getContextWindowFallback(modelName) ??
+      getContextWindowFallback(upstreamId ?? '') ??
+      OPENCODE_SCHEMA_CONTEXT_FALLBACK;
     modelsMap[modelName] = {
       ...(upstreamId ? { id: upstreamId } : {}),
       name: modelName,
       limit: {
         output: outputLimit,
-        ...(contextWindowTokens && contextWindowTokens > 0 ? { context: contextWindowTokens } : {}),
+        context: contextLimit,
       },
     };
   }

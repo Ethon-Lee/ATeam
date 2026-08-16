@@ -72,7 +72,7 @@ function TipContent({
         type="button"
         data-testid="capability-tip-learn-more"
         onClick={openDraft}
-        title="了解更多：打开猫猫球并预填输入框，不会自动发送"
+        title="了解更多"
         className="shrink-0 rounded-md border border-cafe px-2 py-1 text-xs font-medium text-cafe-secondary transition-colors hover:border-cafe-accent hover:text-cafe-accent"
       >
         了解更多

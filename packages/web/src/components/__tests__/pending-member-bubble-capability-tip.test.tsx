@@ -49,7 +49,7 @@ describe('PendingMemberBubble capability tips', () => {
     delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT;
   });
 
-  it('shows the cat identity and tip during the pre-output wait', async () => {
+  it('shows the cat identity and bounded pending state during the pre-output wait', async () => {
     const { PendingMemberBubble } = await import('@/components/PendingMemberBubble');
 
     await act(async () => {
@@ -65,8 +65,8 @@ describe('PendingMemberBubble capability tips', () => {
 
     const bubble = container.querySelector('[data-message-id="pending-inv-001"]');
     expect(bubble?.querySelector('[data-testid="cat-avatar"]')).not.toBeNull();
-    expect(bubble?.querySelector('[data-testid="capability-tip-strip"]')).not.toBeNull();
-    expect(bubble?.querySelectorAll('.animate-bounce').length).toBe(0);
+    expect(bubble?.querySelector('[data-testid="capability-tip-strip"]')).toBeNull();
+    expect(bubble?.querySelectorAll('.animate-bounce').length).toBe(3);
   });
 
   it.each([

@@ -58,7 +58,7 @@ function stripProviderPrefix(model: string): string {
 }
 
 function lookupWithPrefixMatch(table: Record<string, number>, bare: string): number | undefined {
-  if (table[bare]) return table[bare];
+  if (Object.hasOwn(table, bare)) return table[bare];
   // Prefix match (e.g. 'claude-opus-4-6-20260101' matches 'claude-opus-4-6')
   for (const [key, value] of Object.entries(table)) {
     if (bare.startsWith(key)) return value;

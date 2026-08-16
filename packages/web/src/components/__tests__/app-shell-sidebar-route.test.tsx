@@ -47,14 +47,6 @@ vi.mock('@/components/workspace/ResizeHandle', () => ({
   ResizeHandle: () => null,
 }));
 
-vi.mock('@/components/workspace/FloatingPresentationSurfaceHost', () => ({
-  FloatingPresentationSurfaceHost: () => null,
-}));
-
-vi.mock('@/components/concierge/ConciergeHost', () => ({
-  ConciergeHost: () => null,
-}));
-
 import { AppShell } from '@/components/AppShell';
 
 describe('AppShell sidebar route ownership', () => {

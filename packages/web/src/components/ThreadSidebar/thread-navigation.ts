@@ -47,8 +47,8 @@ export function pushThreadRouteWithHistory(threadId: string, windowObj: ThreadNa
   if (!windowObj) return href;
   if (windowObj.location.pathname === href) return href;
 
-  // BUG-UX-12b: when navigating FROM outside the (chat) route group (e.g. /settings,
-  // /mission-hub), the CHAT_THREAD_ROUTE_EVENT listener in (chat)/layout.tsx is not
+  // BUG-UX-12b: when navigating FROM outside the (chat) route group (e.g. /settings),
+  // the CHAT_THREAD_ROUTE_EVENT listener in (chat)/layout.tsx is not
   // mounted — pushState alone changes the URL but React never re-renders, leaving the
   // old page visible alongside a partially-updated thread sidebar.
   // Detect non-chat routes and fall back to location.assign (full page navigation).

@@ -41,4 +41,20 @@ describe('SettingsShell deep-link routing', () => {
     expect(html).toContain('data-section="members"');
     expect(html).toContain('data-active="members"');
   });
+
+  it.each([
+    'im',
+    'plugins',
+    'marketplace',
+    'concierge',
+    'voice',
+    'notify',
+  ])('falls back to the default section for the removed %s deep-link', (section) => {
+    mockSearchParams = new URLSearchParams(`s=${section}`);
+
+    const html = renderToStaticMarkup(<SettingsShell />);
+
+    expect(html).toContain('data-section="members"');
+    expect(html).toContain('data-active="members"');
+  });
 });

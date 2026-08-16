@@ -212,7 +212,7 @@ describe('ChatVoiceFeatureControls', () => {
     expect(useChatStore.getState().rightPanelMode).toBe('transcript');
   });
 
-  it('does not activate a missing voice service and directs the user to voice management', async () => {
+  it('does not activate a missing voice service or direct the user to removed voice settings', async () => {
     apiFetchMock.mockResolvedValue(
       jsonResponse({
         services: [
@@ -233,7 +233,9 @@ describe('ChatVoiceFeatureControls', () => {
     });
 
     expect(useChatStore.getState().rightPanelMode).toBe('status');
-    expect(useToastStore.getState().toasts[0]?.message).toContain('语音管理');
+    const message = useToastStore.getState().toasts[0]?.message ?? '';
+    expect(message).toContain('服务');
+    expect(message).not.toContain('语音管理');
   });
 
   it('preserves every returned service log line in startup failure details', async () => {

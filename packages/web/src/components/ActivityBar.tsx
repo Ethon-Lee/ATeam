@@ -1,26 +1,16 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { lazy, Suspense, useCallback, useState } from 'react';
-import { useApprovalHubSync } from '@/hooks/useApprovalHub';
+import { Suspense, useCallback } from 'react';
 import { usePinnedSections } from '@/hooks/usePinnedSections';
-import { useApprovalHubStore } from '@/stores/approvalHubStore';
-import { useChatStore } from '@/stores/chatStore';
-import { ConciergeRailToggle } from './concierge/ConciergeRailToggle';
 import { HubIcon } from './hub-icons';
 import { MemoryIcon } from './icons/MemoryIcon';
 import { SETTINGS_SECTIONS } from './settings/settings-nav-config';
-import { ThemeMenu } from './ThemeMenu';
 import { getThreadIdFromPathname } from './ThreadSidebar/thread-navigation';
-
-const OklchTuner = lazy(() => import('./dev/OklchTuner').then((m) => ({ default: m.OklchTuner })));
 
 const NAV_ITEMS = [
   { id: 'home', path: '/', label: '对话', match: (p: string) => p === '/' || p.startsWith('/thread/') },
-  { id: 'starry', path: '/starry', label: '猫猫星球', match: (p: string) => p.startsWith('/starry') },
   { id: 'memory', path: '/memory', label: '记忆', match: (p: string) => p.startsWith('/memory') },
-  { id: 'mission', path: '/mission-hub', label: 'Mission Hub', match: (p: string) => p.startsWith('/mission') },
-  { id: 'signals', path: '/signals', label: '信号', match: (p: string) => p.startsWith('/signals') },
 ] as const;
 
 function ChatIcon({ className = 'w-5 h-5' }: { className?: string }) {
@@ -32,47 +22,6 @@ function ChatIcon({ className = 'w-5 h-5' }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function MissionIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-      <title>Mission Hub</title>
-      <path
-        d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M15 3v4a1 1 0 0 0 1 1h4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 13h6" strokeLinecap="round" />
-      <path d="M9 17h3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SignalIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-      <title>信号</title>
-      <path
-        d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <line x1="4" y1="22" x2="4" y2="15" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function PlanetIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-      <title>猫猫星球</title>
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M3.4 14.7c1.8 2.2 6.6 1.7 10.8-.5 4.2-2.1 7.1-5.1 6.4-6.7-.5-1.1-2.7-1.2-5.5-.4" strokeLinecap="round" />
-      <path d="m18.7 3.6.4 1.1 1.1.4-1.1.4-.4 1.1-.4-1.1-1.1-.4 1.1-.4.4-1.1Z" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -91,14 +40,10 @@ function SettingsIcon({ className = 'w-5 h-5' }: { className?: string }) {
   );
 }
 
-const ICON_MAP: Record<string, ({ className }: { className?: string }) => JSX.Element> = {
+const ICON_MAP = {
   home: ChatIcon,
-  starry: PlanetIcon,
-  signals: SignalIcon,
   memory: MemoryIcon,
-  mission: MissionIcon,
-  settings: SettingsIcon,
-};
+} as const;
 
 interface ActivityBarProps {
   className?: string;
@@ -134,97 +79,34 @@ function PinnedSections({ pinned, onNav }: { pinned: readonly string[]; onNav: (
   const isStandalone = searchParams?.get('standalone') === '1';
 
   const pinnedSections = pinned
-    .map((id) => SETTINGS_SECTIONS.find((s) => s.id === id))
-    .filter((s): s is (typeof SETTINGS_SECTIONS)[number] => s != null);
+    .map((id) => SETTINGS_SECTIONS.find((section) => section.id === id))
+    .filter((section): section is (typeof SETTINGS_SECTIONS)[number] => section != null);
 
   if (pinnedSections.length === 0) return null;
 
   return (
     <>
       <div className="my-1 h-px w-6 bg-[var(--console-border-soft)] opacity-50" />
-      {pinnedSections.map((sec) => {
-        const active = isStandalone && activeSection === sec.id;
+      {pinnedSections.map((section) => {
+        const active = isStandalone && activeSection === section.id;
         return (
           <button
-            key={sec.id}
+            key={section.id}
             type="button"
-            onClick={() => onNav(`/settings?s=${sec.id}&standalone=1`)}
+            onClick={() => onNav(`/settings?s=${section.id}&standalone=1`)}
             className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all ${
               active
                 ? 'bg-[var(--console-rail-active)] shadow-[var(--console-rail-shadow)]'
                 : 'hover:bg-[var(--console-rail-item)] hover:shadow-[var(--console-rail-shadow)]'
             }`}
-            title={sec.label}
+            title={section.label}
             aria-current={active ? 'page' : undefined}
           >
-            <HubIcon name={sec.icon} className="h-[18px] w-[18px]" />
+            <HubIcon name={section.icon} className="h-[18px] w-[18px]" />
           </button>
         );
       })}
     </>
-  );
-}
-
-function BellIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-      <title>Needs Me</title>
-      <path
-        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ApprovalHubButton() {
-  const count = useApprovalHubStore((s) => s.count);
-  const fetchPending = useApprovalHubStore((s) => s.fetchPending);
-  const setWorkspaceMode = useChatStore((s) => s.setWorkspaceMode);
-  const workspaceMode = useChatStore((s) => s.workspaceMode);
-  const rightPanelMode = useChatStore((s) => s.rightPanelMode);
-  const setRightPanelMode = useChatStore((s) => s.setRightPanelMode);
-
-  const handleClick = useCallback(() => {
-    // F246 Phase C: bell click → workspace approval tab (replaces drawer toggle)
-    if (workspaceMode === 'approval' && rightPanelMode === 'workspace') {
-      // Already on approval tab + workspace open → toggle close
-      setRightPanelMode('status');
-    } else {
-      // Open workspace panel and switch to approval tab
-      setWorkspaceMode('approval');
-      // Refresh pending approvals on open (preserves old drawer toggle semantics)
-      fetchPending();
-    }
-  }, [workspaceMode, rightPanelMode, setWorkspaceMode, setRightPanelMode, fetchPending]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="relative flex h-10 w-10 items-center justify-center rounded-lg transition-all hover:bg-[var(--console-rail-item)] hover:shadow-[var(--console-rail-shadow)]"
-      title={count > 0 ? `${count} 项需要处理` : 'Needs Me'}
-      data-testid="approval-hub-button"
-    >
-      <BellIcon className="h-5 w-5" />
-      {count > 0 && (
-        <span
-          className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-micro font-bold flex items-center justify-center"
-          style={{
-            backgroundColor: 'var(--semantic-warning)',
-            color: 'var(--cafe-accent-foreground)',
-            maxWidth: '22px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-          data-testid="approval-hub-badge"
-        >
-          {count > 99 ? '99+' : String(count)}
-        </span>
-      )}
-    </button>
   );
 }
 
@@ -253,53 +135,10 @@ function SettingsButton({ pathname, onNav }: { pathname: string; onNav: (path: s
   );
 }
 
-function ClapperboardIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-      <title>演示浮窗</title>
-      <path
-        d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="m6.2 5.3 3.1 3.9M12.4 3.4l3.1 4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/** F226: global presentation-surface toggle — visible across all routes so the
- *  float can be collapsed/recalled even from Memory Hub / Settings (spec Phase A). */
-function PresentationRailToggle() {
-  const surface = useChatStore((s) => s.presentationSurface);
-  const minimizeFloat = useChatStore((s) => s.minimizeFloat);
-  if (!surface) return null;
-  const minimized = surface.minimized;
-  return (
-    <button
-      type="button"
-      onClick={() => minimizeFloat(!minimized)}
-      className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all ${
-        minimized
-          ? 'hover:bg-[var(--console-rail-item)] hover:shadow-[var(--console-rail-shadow)]'
-          : 'bg-[var(--console-rail-active)] shadow-[var(--console-rail-shadow)]'
-      }`}
-      title={minimized ? '召回演示浮窗（还原讲稿）' : '收起演示浮窗'}
-      data-testid="presentation-rail-toggle"
-    >
-      <ClapperboardIcon className="h-5 w-5" />
-    </button>
-  );
-}
-
 export function ActivityBar({ className }: ActivityBarProps) {
   const pathname = usePathname() ?? '/';
   const router = useRouter();
   const { pinned } = usePinnedSections();
-  const [tunerOpen, setTunerOpen] = useState(false);
-
-  // F246: Approval Hub — fetch pending on mount + subscribe to proposal events
-  useApprovalHubSync();
 
   const handleNav = useCallback(
     (path: string) => {
@@ -310,7 +149,7 @@ export function ActivityBar({ className }: ActivityBarProps) {
 
   return (
     <nav
-      className={`flex w-[52px] flex-shrink-0 flex-col items-center gap-1.5 py-2.5 px-[6px] bg-[var(--console-rail-bg)] ${className ?? ''}`}
+      className={`flex w-[52px] flex-shrink-0 flex-col items-center gap-1.5 bg-[var(--console-rail-bg)] px-[6px] py-2.5 ${className ?? ''}`}
       aria-label="主导航"
     >
       {NAV_ITEMS.map((item) => {
@@ -341,12 +180,6 @@ export function ActivityBar({ className }: ActivityBarProps) {
       </Suspense>
 
       <div className="mt-auto flex flex-col items-center gap-1.5">
-        {/* F246: Approval Hub bell icon with badge count */}
-        <ApprovalHubButton />
-        {/* F229: concierge re-entry —唤回入口，muted 时是唯一入口 (INV-3) */}
-        <ConciergeRailToggle />
-        <PresentationRailToggle />
-        <ThemeMenu onEditTheme={() => setTunerOpen(true)} />
         <Suspense
           fallback={
             <button
@@ -362,11 +195,6 @@ export function ActivityBar({ className }: ActivityBarProps) {
           <SettingsButton pathname={pathname} onNav={handleNav} />
         </Suspense>
       </div>
-      {tunerOpen && (
-        <Suspense>
-          <OklchTuner onClose={() => setTunerOpen(false)} />
-        </Suspense>
-      )}
     </nav>
   );
 }

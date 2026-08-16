@@ -7,7 +7,6 @@ import { useWorkspaceNavigate } from '@/hooks/useWorkspaceNavigate';
 import { CallbackAuthSnapshotMount } from '@/stores/callbackAuthStore';
 import { initSidebarWidth, useSidebarStore } from '@/stores/sidebarStore';
 import { ActivityBar } from './ActivityBar';
-import { ConciergeHost } from './concierge/ConciergeHost';
 import { DesktopUpdatePrompt } from './DesktopUpdatePrompt';
 import { ThreadSidebar } from './ThreadSidebar';
 import {
@@ -15,12 +14,9 @@ import {
   getThreadIdFromPathname,
   subscribeBrowserThreadRoute,
 } from './ThreadSidebar/thread-navigation';
-import { FloatingPresentationSurfaceHost } from './workspace/FloatingPresentationSurfaceHost';
 import { ResizeHandle } from './workspace/ResizeHandle';
 
-const CHROMELESS_ROUTES = ['/story', '/story-export', '/pixel-brawl', '/showcase'];
-
-const SIDEBAR_HIDDEN_ROUTES = ['/settings', '/marketplace', '/signals', '/memory', '/mission', '/starry'];
+const SIDEBAR_HIDDEN_ROUTES = ['/settings', '/memory'];
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -46,7 +42,7 @@ function AppShellContent({ children }: AppShellProps) {
   const isDesktop = useIsDesktop();
   const routeThreadId = getThreadIdFromPathname(livePathname);
   const isChatRoute = livePathname === '/' || livePathname.startsWith('/thread/');
-  const isChromeless = CHROMELESS_ROUTES.some((route) => pathname.startsWith(route));
+
   useWorkspaceNavigate(isChatRoute ? routeThreadId : null, {
     isChatRoute,
     isWorkspaceVisible: isDesktop,
@@ -57,26 +53,18 @@ function AppShellContent({ children }: AppShellProps) {
     initSidebarWidth();
   }, []);
 
-  if (isExport || isChromeless) {
-    return <>{children}</>;
-  }
+  if (isExport) return <>{children}</>;
 
-  const showSidebar = isOpen && isDesktop && !SIDEBAR_HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
+  const showSidebar = isOpen && isDesktop && !SIDEBAR_HIDDEN_ROUTES.some((route) => pathname.startsWith(route));
 
   return (
     <div className="console-shell flex h-screen h-dvh overflow-hidden">
       <Suspense fallback={<div className="w-12 flex-shrink-0" aria-hidden="true" />}>
         <ActivityBar />
       </Suspense>
-      {/* Callback-auth snapshot provider: mounted at AppShell level (not chat
-          layout) so the zustand store is populated on ALL routes — settings,
-          memory, mission, etc. The observability panel and per-cat status dots
-          read from this store; keeping it chat-only meant the panel showed "..."
-          when navigating to settings without visiting chat first. Returns null;
-          30s poll re-render is confined to this leaf. */}
       <CallbackAuthSnapshotMount />
       {showSidebar && (
-        <div className="flex items-stretch flex-shrink-0">
+        <div className="flex flex-shrink-0 items-stretch">
           <div style={{ width }} className="flex-shrink-0">
             <ThreadSidebar onClose={close} className="w-full" routeThreadId={routeThreadId} />
           </div>
@@ -90,15 +78,7 @@ function AppShellContent({ children }: AppShellProps) {
           />
         </div>
       )}
-      <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
-      {/* F226: presentation surface floating window — mounted at AppShell root (outside route
-          children) so the float survives both workspace mode-tab switches AND full-page route
-          changes (/memory, /settings, /mission-hub). KD-1. */}
-      <FloatingPresentationSurfaceHost />
-      {/* F229: concierge ball + panel — root-level mount for INV-6 route survival.
-          z-30 (ball) < z-[35] (presentation surface). */}
-      <ConciergeHost />
-      {/* F246 Phase C: Approval Hub moved to workspace panel tab — drawer removed */}
+      <div className="min-w-0 flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 }

@@ -58,7 +58,7 @@ function toastServiceMissing(feature: VoiceFeature) {
   useToastStore.getState().addToast({
     type: 'info',
     title: `${serviceLabel}未安装`,
-    message: `请到设置 → 语音管理安装并启用${serviceLabel}服务。`,
+    message: `${serviceLabel}服务未安装或未配置，当前会话无法启用此功能。`,
     duration: 6000,
   });
 }

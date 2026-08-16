@@ -29,18 +29,11 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: '模型账户、凭据和执行身份的归属关系。',
   },
   {
-    id: 'im',
-    label: 'IM 对接',
-    icon: 'plug',
-    color: 'var(--cafe-accent)',
-    description: '飞书、钉钉、企微和外部消息入口。',
-  },
-  {
     id: 'skills',
     label: 'Skill 管理',
     icon: 'zap',
     color: 'var(--cafe-accent)',
-    description: '技能市场、安装计划和本地能力预览。',
+    description: '已安装 Skill 的启停、挂载规则和本地预览。',
   },
   {
     id: 'mcp',
@@ -48,34 +41,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: 'box',
     color: 'var(--cafe-accent)',
     description: 'MCP 服务、工具目录和浏览器自动化依赖。',
-  },
-  {
-    id: 'plugins',
-    label: '插件集成',
-    icon: 'puzzle',
-    color: 'var(--cafe-accent)',
-    description: '插件状态、外部集成以及安装结果。',
-  },
-  {
-    id: 'marketplace',
-    label: '能力市场',
-    icon: 'search',
-    color: 'var(--cafe-accent)',
-    description: '搜索和安装 MCP、Skill、插件等能力包。',
-  },
-  {
-    id: 'concierge',
-    label: '猫猫球',
-    icon: 'cat',
-    color: 'var(--cafe-accent)',
-    description: '猫猫球的形象、人设、值班猫和主动性策略。',
-  },
-  {
-    id: 'voice',
-    label: '语音管理',
-    icon: 'mic',
-    color: 'var(--color-gemini-primary)',
-    description: '语音输入输出、术语表和 TTS 服务状态。',
   },
   {
     id: 'system',
@@ -90,13 +55,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: 'file-text',
     color: 'var(--color-gemini-primary)',
     description: '会话生命周期、注入体系、协作规则与模型指南。',
-  },
-  {
-    id: 'notify',
-    label: '通知',
-    icon: 'bell',
-    color: 'var(--color-gemini-primary)',
-    description: '推送订阅、提醒策略与设备联动。',
   },
   {
     id: 'ops',

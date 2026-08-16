@@ -9,8 +9,6 @@ import { apiFetch } from '@/utils/api-client';
 import { loadThreads as loadCachedThreads } from '@/utils/offline-store';
 import { BootcampListModal } from '../BootcampListModal';
 import { BootcampIcon } from '../icons/BootcampIcon';
-import { TheaterOverlay } from '../story-player/TheaterOverlay';
-import { TheaterReplayContent } from '../story-player/TheaterReplayContent';
 
 import { readProjectNames, writeProjectNames } from './active-workspace';
 import { DirectoryPickerModal, type NewThreadOptions } from './DirectoryPickerModal';
@@ -116,8 +114,6 @@ export function ThreadSidebar({ onClose, className, routeThreadId }: ThreadSideb
   const [isLoadingTrash, setIsLoadingTrash] = useState(false);
   // F070: governance health by project path
   const [govHealth, setGovHealth] = useState<Record<string, string>>({});
-  // F252 Phase E: Meow Theater replay state
-  const [replayThreadId, setReplayThreadId] = useState<string | null>(null);
   const [tabState, dispatchTabEvent] = useReducer(sidebarTabReducer, null, () => {
     const preference = readBrowserSidebarTabPreference();
     return createSidebarTabState(preference.tab, preference.persisted);
@@ -415,11 +411,6 @@ export function ThreadSidebar({ onClose, className, routeThreadId }: ThreadSideb
 
   const handleUpdateLabels = useCallback(async (threadId: string, labels: string[]) => {
     await useChatStore.getState().updateThreadLabels(threadId, labels);
-  }, []);
-
-  // F252 Phase E: open Meow Theater replay for a thread
-  const handleReplay = useCallback((threadId: string) => {
-    setReplayThreadId(threadId);
   }, []);
 
   const handleSelect = useCallback(
@@ -1008,7 +999,6 @@ export function ThreadSidebar({ onClose, className, routeThreadId }: ThreadSideb
         onToggleFavorite={handleToggleFavorite}
         onUpdatePreferredCats={handleUpdatePreferredCats}
         onUpdateLabels={handleUpdateLabels}
-        onReplay={handleReplay}
         isPinned={thread.pinned}
         isFavorited={thread.favorited}
         projectPath={thread.projectPath}
@@ -1023,7 +1013,6 @@ export function ThreadSidebar({ onClose, className, routeThreadId }: ThreadSideb
       currentThreadId,
       handleDeleteRequest,
       handleRename,
-      handleReplay,
       handleSelect,
       handleToggleFavorite,
       handleTogglePin,
@@ -1477,16 +1466,6 @@ export function ThreadSidebar({ onClose, className, routeThreadId }: ThreadSideb
         />
       )}
 
-      {/* F252 Phase E: Meow Theater replay overlay */}
-      {replayThreadId && (
-        <TheaterOverlay
-          open={!!replayThreadId}
-          onClose={() => setReplayThreadId(null)}
-          title={threads.find((t) => t.id === replayThreadId)?.title ?? undefined}
-        >
-          <TheaterReplayContent threadId={replayThreadId} />
-        </TheaterOverlay>
-      )}
     </>
   );
 }

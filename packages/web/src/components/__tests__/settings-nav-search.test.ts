@@ -46,8 +46,27 @@ describe('SettingsNav search filtering', () => {
       root.render(React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn() }));
     });
     const buttons = Array.from(container.querySelectorAll('[data-active]'));
-    expect(buttons).toHaveLength(14);
+    expect(buttons).toHaveLength(8);
     expect(container.textContent).toContain('协作与规则');
+    for (const removedLabel of ['IM 对接', '插件集成', '能力市场', '猫猫球', '语音管理', '通知']) {
+      expect(container.textContent).not.toContain(removedLabel);
+    }
+  });
+
+  it.each([
+    'telegram',
+    'plugin',
+    'marketplace',
+    '悬浮球',
+    '语音',
+    '通知',
+  ])('does not expose removed settings through the %s search alias', (searchQuery) => {
+    act(() => {
+      root.render(React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn(), searchQuery }));
+    });
+
+    expect(container.querySelectorAll('[data-active]')).toHaveLength(0);
+    expect(container.textContent).toContain('没有匹配的设置分区');
   });
 
   it('renders a primary icon for every settings section', () => {
@@ -56,7 +75,7 @@ describe('SettingsNav search filtering', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('[data-active]'));
-    expect(buttons).toHaveLength(14);
+    expect(buttons).toHaveLength(8);
     for (const button of buttons) {
       expect(button.querySelector('svg.h-4.w-4')).toBeTruthy();
     }
@@ -65,23 +84,12 @@ describe('SettingsNav search filtering', () => {
   it('filters sections by label match', () => {
     act(() => {
       root.render(
-        React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn(), searchQuery: '语音' }),
+        React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn(), searchQuery: '密钥' }),
       );
     });
     const buttons = Array.from(container.querySelectorAll('[data-active]'));
     expect(buttons).toHaveLength(1);
-    expect(buttons[0].textContent).toContain('语音管理');
-  });
-
-  it('filters by keyword match (e.g. telegram matches IM 对接)', () => {
-    act(() => {
-      root.render(
-        React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn(), searchQuery: 'telegram' }),
-      );
-    });
-    const buttons = Array.from(container.querySelectorAll('[data-active]'));
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0].textContent).toContain('IM 对接');
+    expect(buttons[0].textContent).toContain('账户与密钥');
   });
 
   it('filters governance keywords to the rules and SOP section', () => {
@@ -93,17 +101,6 @@ describe('SettingsNav search filtering', () => {
     const buttons = Array.from(container.querySelectorAll('[data-active]'));
     expect(buttons).toHaveLength(1);
     expect(buttons[0].textContent).toContain('协作与规则');
-  });
-
-  it('filters concierge keywords to the 猫猫球 section', () => {
-    act(() => {
-      root.render(
-        React.createElement(SettingsNav, { activeSection: 'members', onSelect: vi.fn(), searchQuery: '悬浮球' }),
-      );
-    });
-    const buttons = Array.from(container.querySelectorAll('[data-active]'));
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0].textContent).toContain('猫猫球');
   });
 
   it('shows empty message when no match', () => {
@@ -119,11 +116,11 @@ describe('SettingsNav search filtering', () => {
 
   it('marks the active item with font-medium class for visual distinction', () => {
     act(() => {
-      root.render(React.createElement(SettingsNav, { activeSection: 'voice', onSelect: vi.fn() }));
+      root.render(React.createElement(SettingsNav, { activeSection: 'ops', onSelect: vi.fn() }));
     });
 
     const navButtons = Array.from(container.querySelectorAll('[data-active]'));
-    const active = navButtons.find((b) => b.textContent?.includes('语音管理'));
+    const active = navButtons.find((b) => b.textContent?.includes('运维监控'));
     expect(active).toBeTruthy();
     expect(active?.className).toContain('font-medium');
   });
