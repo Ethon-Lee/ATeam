@@ -59,4 +59,8 @@ describe('shortcut-registry', () => {
       expect(s.context.length).toBeGreaterThan(0);
     }
   });
+
+  it('does not expose the removed voice-input shortcut', () => {
+    expect(SHORTCUTS.some((shortcut) => shortcut.description === '切换语音录入')).toBe(false);
+  });
 });

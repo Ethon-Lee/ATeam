@@ -1,15 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useVoiceInput } from '@/hooks/useVoiceInput';
-import { ExpandableProse } from './content-overflow';
-import { LoadingIcon } from './icons/LoadingIcon';
-import { MicIcon } from './icons/MicIcon';
 import { SendIcon } from './icons/SendIcon';
-import { StopRecordingIcon } from './icons/StopRecordingIcon';
 
 interface ChatInputActionButtonProps {
-  onTranscript: (text: string) => void;
   onSend: () => void;
   /** F39: Queue-mode send (content will be queued behind running invocation) */
   onQueueSend?: () => void;
@@ -23,7 +16,7 @@ interface ChatInputActionButtonProps {
   hasText: boolean;
 }
 
-/** Queue send icon — arrow into a stack/list */
+/** Queue send icon — arrow into a stack/list. */
 function QueueSendIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 20 20" fill="currentColor">
@@ -33,18 +26,15 @@ function QueueSendIcon({ className }: { className?: string }) {
   );
 }
 
-/** Renders the action button states:
- *  1. Stop generation (disabled + active invocation)
- *  2. Stop recording
- *  3. Transcribing
- *  4. Queue send (F39: active invocation + has text)
- *  5. Normal send (has text)
- *  6. Mic (default)
+/**
+ * Renders the conversation action states:
+ * 1. Stop generation (disabled + active invocation)
+ * 2. Queue send (active invocation + text)
+ * 3. Normal send (text)
  *
- *  Plus voice recording status overlays (REC badge, error).
- *  Keyboard shortcut: Option+V toggles recording. */
+ * Voice input is intentionally not part of the Mini Clowder conversation surface.
+ */
 export function ChatInputActionButton({
-  onTranscript,
   onSend,
   onQueueSend,
   onForceSend,
@@ -54,58 +44,11 @@ export function ChatInputActionButton({
   hasActiveInvocation,
   hasText,
 }: ChatInputActionButtonProps) {
-  const voice = useVoiceInput();
   const isSendDisabled = Boolean(disabled || sendDisabled);
-
-  useEffect(() => {
-    if (voice.transcript) onTranscript(voice.transcript);
-  }, [voice.transcript, onTranscript]);
-
-  // Global keyboard shortcut: Option+V (Alt+V) toggles voice recording
-  const { state: voiceState, startRecording, stopRecording } = voice;
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.altKey && e.code === 'KeyV') {
-        e.preventDefault();
-        if (voiceState === 'recording') {
-          stopRecording();
-        } else if (voiceState === 'idle' && !disabled) {
-          startRecording();
-        }
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [voiceState, startRecording, stopRecording, disabled]);
-
-  // F39: Whether we're in queue mode (cat running + user has typed)
   const isQueueMode = Boolean(hasActiveInvocation && hasText && !disabled);
 
   return (
     <>
-      {/* Voice recording status (absolute, attaches to ancestor .relative) */}
-      {voice.state === 'recording' && (
-        <div className="absolute top-0 right-4 -mt-6 flex items-center gap-2">
-          {voice.partialTranscript && (
-            <ExpandableProse
-              text={voice.partialTranscript}
-              lines={2}
-              className="max-w-[240px] rounded-lg bg-cafe-surface-sunken px-2 py-0.5 opacity-80"
-              contentClassName="text-xs leading-4 text-cafe"
-            />
-          )}
-          <div className="px-2 py-0.5 bg-conn-red-text text-[var(--cafe-accent-foreground)] text-xs rounded-full animate-pulse whitespace-nowrap">
-            REC {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, '0')}
-          </div>
-        </div>
-      )}
-      {voice.error && (
-        <div className="absolute top-0 left-4 -mt-6 px-3 py-1 bg-conn-red-bg text-conn-red-text text-xs rounded-lg">
-          {voice.error}
-        </div>
-      )}
-
-      {/* Stop button: visible alongside queue send (primary stop covers disabled state) */}
       {hasActiveInvocation && !disabled && onStop && (
         <button
           onClick={() => onStop()}
@@ -119,9 +62,7 @@ export function ChatInputActionButton({
         </button>
       )}
 
-      {/* Primary action button priority chain */}
       {disabled && onStop && hasActiveInvocation ? (
-        /* Backward compat: when explicitly disabled during active invocation, Stop is the only primary action */
         <button
           onClick={() => onStop()}
           className="p-3 rounded-xl bg-conn-red-text text-[var(--cafe-surface)] hover:bg-conn-red-hover transition-colors"
@@ -132,26 +73,7 @@ export function ChatInputActionButton({
             <rect x="4" y="4" width="12" height="12" rx="2" />
           </svg>
         </button>
-      ) : voice.state === 'recording' ? (
-        <button
-          onClick={voice.stopRecording}
-          className="p-3 rounded-xl bg-conn-red-text text-[var(--cafe-surface)] hover:bg-conn-red-hover transition-colors animate-pulse"
-          title="停止录音"
-          aria-label="Stop recording"
-        >
-          <StopRecordingIcon className="w-5 h-5" />
-        </button>
-      ) : voice.state === 'transcribing' ? (
-        <button
-          disabled
-          className="p-3 rounded-xl bg-cafe-surface-sunken text-cafe-muted cursor-wait"
-          title="转写中"
-          aria-label="Transcribing"
-        >
-          <LoadingIcon className="w-5 h-5" />
-        </button>
       ) : isQueueMode && onQueueSend ? (
-        /* F39: Queue send — cat is running, user typed, queue the message */
         <div className="flex items-center gap-1">
           <button
             onClick={onQueueSend}
@@ -190,17 +112,7 @@ export function ChatInputActionButton({
         >
           <SendIcon className="w-5 h-5" />
         </button>
-      ) : (
-        <button
-          onClick={voice.startRecording}
-          disabled={disabled}
-          className="p-3 rounded-xl text-cafe-muted hover:text-cafe-accent hover:bg-cafe-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          aria-label="Start voice input (⌥V)"
-          title="语音输入 (⌥V)"
-        >
-          <MicIcon className="w-5 h-5" />
-        </button>
-      )}
+      ) : null}
     </>
   );
 }

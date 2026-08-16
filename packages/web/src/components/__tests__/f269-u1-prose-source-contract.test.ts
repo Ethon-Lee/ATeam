@@ -8,7 +8,6 @@ interface ProseMigration {
 }
 
 const PROSE_MIGRATIONS: ProseMigration[] = [
-  { path: '../ChatInputActionButton.tsx', legacy: 'max-w-[240px] truncate' },
   { path: '../first-run-quest/TemplateStep.tsx', legacy: 'line-clamp-1 text-xs text-cafe-muted' },
   { path: '../marketplace/artifact-card.tsx', legacy: 'line-clamp-2 text-xs leading-relaxed' },
   {

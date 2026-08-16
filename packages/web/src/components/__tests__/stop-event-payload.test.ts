@@ -2,18 +2,6 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/hooks/useVoiceInput', () => ({
-  useVoiceInput: () => ({
-    state: 'idle',
-    transcript: '',
-    partialTranscript: '',
-    error: null,
-    duration: 0,
-    startRecording: vi.fn(),
-    stopRecording: vi.fn(),
-  }),
-}));
-
 vi.mock('@/stores/chatStore', () => ({
   useChatStore: () => ({
     targetCats: ['codex', 'gemini'],
@@ -58,7 +46,6 @@ describe('Stop event payload regression', () => {
     act(() => {
       root.render(
         React.createElement(ChatInputActionButton, {
-          onTranscript: vi.fn(),
           onSend: vi.fn(),
           onStop,
           disabled: true,

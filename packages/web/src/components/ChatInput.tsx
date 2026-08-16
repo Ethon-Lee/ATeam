@@ -208,13 +208,6 @@ export function ChatInput({
     setIsPreparingImages,
   });
 
-  const handleTranscript = useCallback((text: string) => {
-    setInput((prev) => {
-      const separator = prev && !prev.endsWith(' ') ? ' ' : '';
-      return prev + separator + text;
-    });
-  }, []);
-
   const filteredCatOptions = useMemo(() => {
     if (!mentionFilter) return catOptions;
     const lower = mentionFilter.toLowerCase();
@@ -993,7 +986,6 @@ export function ChatInput({
         </div>
 
         <ChatInputActionButton
-          onTranscript={handleTranscript}
           onSend={handleSend}
           onStop={onStop}
           onQueueSend={handleQueueSend}

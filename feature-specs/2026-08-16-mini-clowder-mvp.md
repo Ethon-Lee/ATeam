@@ -40,6 +40,7 @@ created: 2026-08-16
 - Mission Hub/Control and governance workflow surfaces.
 - Signals inbox, Story/Showcase/Theater, Pixel Brawl, Visible Cafe, and Starry surfaces.
 - External project import, complex connectors, Finance UI, podcast/media export.
+- Voice input and recording in the conversation composer; text remains the sole composer input path.
 - New graph/proactive-memory product surfaces; existing backend primitives remain dormant unless required by the core path.
 
 ## Terminal Data Schema
