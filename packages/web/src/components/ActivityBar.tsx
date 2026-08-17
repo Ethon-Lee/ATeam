@@ -4,13 +4,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback } from 'react';
 import { usePinnedSections } from '@/hooks/usePinnedSections';
 import { HubIcon } from './hub-icons';
-import { MemoryIcon } from './icons/MemoryIcon';
 import { SETTINGS_SECTIONS } from './settings/settings-nav-config';
 import { getThreadIdFromPathname } from './ThreadSidebar/thread-navigation';
 
 const NAV_ITEMS = [
   { id: 'home', path: '/', label: '对话', match: (p: string) => p === '/' || p.startsWith('/thread/') },
-  { id: 'memory', path: '/memory', label: '记忆', match: (p: string) => p.startsWith('/memory') },
 ] as const;
 
 function ChatIcon({ className = 'w-5 h-5' }: { className?: string }) {
@@ -42,7 +40,6 @@ function SettingsIcon({ className = 'w-5 h-5' }: { className?: string }) {
 
 const ICON_MAP = {
   home: ChatIcon,
-  memory: MemoryIcon,
 } as const;
 
 interface ActivityBarProps {

@@ -12,7 +12,7 @@ created: 2026-08-16
 
 **Feature:** Mini Clowder MVP
 **Goal:** Deliver a persistent multi-agent chat workspace that visibly demonstrates parallel routing, serial synthesis, and bounded thread context.
-**Acceptance Criteria:** The web surface exposes only Chat, Memory, and Settings; users can create and resume threads, send streaming messages, route to one or more agents, observe per-agent execution state, attach thread/file context, and recover messages/invocations/summaries after reload.
+**Acceptance Criteria:** The global web surface exposes only Chat and Settings; the existing `/memory` route remains available for compatible deep links but has no Activity Bar entry. Users can create and resume threads, send streaming messages, route to one or more agents, observe per-agent execution state, attach thread/file context, and recover messages/invocations/summaries after reload.
 **Architecture cell:** `dispatch` (runtime) + `bubble-pipeline` (web) + existing memory services
 **Map delta:** none
 **Map delta why:** MVP reuses the existing dispatch, bubble, and memory ownership cells; it narrows the public surface and does not introduce a new runtime boundary.
@@ -32,7 +32,7 @@ created: 2026-08-16
 - Serial execution for single-agent work and follow-up synthesis.
 - Invocation lifecycle visibility: queued, running, completed, failed, cancelled, retry.
 - Thread-local context: recent messages, persisted summary, explicit Thread/File attachments, and recall evidence.
-- Memory page for context search/status; Settings for required Agent/Provider configuration.
+- Existing `/memory` deep links for context search/status, without a global navigation entry; Settings for required Agent/Provider configuration.
 - Durable messages, invocations, summaries, and evidence; transient queue state in Redis.
 
 ### Explicitly out of scope
@@ -79,7 +79,7 @@ Lifecycle owner is the existing ThreadStore/MessageStore/InvocationRecordStore a
 - Test: `packages/web/src/components/__tests__/activity-bar-referrer.test.ts`
 - Test: `packages/web/src/components/__tests__/app-shell-callback-auth-mount.test.tsx`
 
-Remove global entry points for deferred Approval, Concierge, Presentation, and other showcase surfaces. Keep Chat, Memory, Settings, Thread Sidebar, callback-auth status, and the chat-owned contextual workspace intact.
+Remove global entry points for Memory, deferred Approval, Concierge, Presentation, and other showcase surfaces. Keep Chat, Settings, Thread Sidebar, callback-auth status, and the chat-owned contextual workspace intact. Preserve the `/memory` route for existing deep links.
 
 Verification:
 

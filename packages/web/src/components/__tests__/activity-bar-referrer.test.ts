@@ -28,10 +28,6 @@ vi.mock('@/components/ThreadSidebar/thread-navigation', () => ({
   getThreadIdFromPathname,
 }));
 
-vi.mock('@/components/icons/MemoryIcon', () => ({
-  MemoryIcon: ({ className }: { className?: string }) => React.createElement('span', { className }, 'M'),
-}));
-
 vi.mock('@/hooks/usePinnedSections', () => ({
   usePinnedSections: () => ({ pinned: [], pin: vi.fn(), unpin: vi.fn(), isPinned: () => false }),
 }));
@@ -63,19 +59,19 @@ describe('ActivityBar referrer forwarding (P2 fix)', () => {
     container.remove();
   });
 
-  it('appends ?from=threadId when navigating to memory', () => {
+  it('appends ?from=threadId when navigating to settings', () => {
     React.act(() => {
       root.render(React.createElement(ActivityBar));
     });
 
-    const memoryBtn = container.querySelector('button[title="记忆"]') as HTMLElement;
-    expect(memoryBtn).toBeTruthy();
+    const settingsBtn = container.querySelector('[data-testid="settings-button"]') as HTMLElement;
+    expect(settingsBtn).toBeTruthy();
 
     React.act(() => {
-      memoryBtn.click();
+      settingsBtn.click();
     });
 
-    expect(mockPush).toHaveBeenCalledWith('/memory?from=thread-abc');
+    expect(mockPush).toHaveBeenCalledWith('/settings?from=thread-abc');
   });
 
   it('does NOT append ?from= when clicking the home button', () => {
@@ -91,35 +87,6 @@ describe('ActivityBar referrer forwarding (P2 fix)', () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith('/');
-  });
-
-  it('forwards existing ?from= when cross-hopping between non-thread pages', () => {
-    getThreadIdFromPathname.mockReturnValueOnce('default');
-    const originalSearch = window.location.search;
-    Object.defineProperty(window, 'location', {
-      value: { ...window.location, search: '?from=thread-abc' },
-      writable: true,
-      configurable: true,
-    });
-
-    React.act(() => {
-      root.render(React.createElement(ActivityBar));
-    });
-
-    const memoryBtn = container.querySelector('button[title="记忆"]') as HTMLElement;
-    expect(memoryBtn).toBeTruthy();
-
-    React.act(() => {
-      memoryBtn.click();
-    });
-
-    expect(mockPush).toHaveBeenCalledWith('/memory?from=thread-abc');
-
-    Object.defineProperty(window, 'location', {
-      value: { ...window.location, search: originalSearch },
-      writable: true,
-      configurable: true,
-    });
   });
 
   it('encodes existing ?from= when routing back to a thread from the home button', () => {
@@ -151,6 +118,35 @@ describe('ActivityBar referrer forwarding (P2 fix)', () => {
     });
   });
 
+  it('forwards existing ?from= when cross-hopping between non-thread pages', () => {
+    getThreadIdFromPathname.mockReturnValueOnce('default');
+    const originalSearch = window.location.search;
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, search: '?from=thread-abc' },
+      writable: true,
+      configurable: true,
+    });
+
+    React.act(() => {
+      root.render(React.createElement(ActivityBar));
+    });
+
+    const settingsBtn = container.querySelector('[data-testid="settings-button"]') as HTMLElement;
+    expect(settingsBtn).toBeTruthy();
+
+    React.act(() => {
+      settingsBtn.click();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/settings?from=thread-abc');
+
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, search: originalSearch },
+      writable: true,
+      configurable: true,
+    });
+  });
+
   it('exposes only the MVP navigation surface', () => {
     React.act(() => {
       root.render(React.createElement(ActivityBar));
@@ -160,7 +156,7 @@ describe('ActivityBar referrer forwarding (P2 fix)', () => {
     expect(container.querySelector('[data-testid="concierge-rail-toggle"]')).toBeNull();
     expect(container.querySelector('[data-testid="presentation-rail-toggle"]')).toBeNull();
     expect(container.querySelector('button[title="对话"]')).toBeTruthy();
-    expect(container.querySelector('button[title="记忆"]')).toBeTruthy();
+    expect(container.querySelector('button[title="记忆"]')).toBeNull();
     expect(container.querySelector('[data-testid="settings-button"]')).toBeTruthy();
   });
 });
