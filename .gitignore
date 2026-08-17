@@ -82,6 +82,7 @@ cat-config.json
 # OS files
 .DS_Store
 Thumbs.db
+**/Microsoft/Windows/PowerShell/ModuleAnalysisCache
 
 # Browser/automation files
 cookies.json
